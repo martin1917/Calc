@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <script src="logic.js" defer></script>
+    <title>Cals</title>
+</head>
+<body onload="Begin()">
+    <div class="field">
+
+        <div class="fieldForInput">
+            <form action="/" name="form1">
+                <input type="text" name="textView" readonly>
+            </form>
+        </div>
+
+        <div class="item DelAll" onclick="ClearAll()">C</div>
+        <div class="item" onclick="ClearOne()">D</div>
+        <div class="item" onclick="InputOperation('/')">/</div>
+
+        <div class="item num" onclick="InputNum('7')">7</div>
+        <div class="item num" onclick="InputNum('8')">8</div>
+        <div class="item num" onclick="InputNum('9')">9</div>
+        <div class="item" onclick="InputOperation('*')">*</div>
+
+        <div class="item num" onclick="InputNum('4')">4</div>
+        <div class="item num" onclick="InputNum('5')">5</div>
+        <div class="item num" onclick="InputNum('6')">6</div>
+        <div class="item" onclick="InputOperation('-')">-</div>
+
+        <div class="item num" onclick="InputNum('1')">1</div>
+        <div class="item num" onclick="InputNum('2')">2</div>
+        <div class="item num" onclick="InputNum('3')">3</div>
+        <div class="item" onclick="InputOperation('+')">+</div>
+
+        <div class="item num zero" onclick="InputNum('0')">0</div>
+        <div class="item" onclick="ToDouble()">.</div>
+        <div class="item" onclick="Equel()">=</div>
+    </div>
+</body>
+</html>
