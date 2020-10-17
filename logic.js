@@ -1,7 +1,8 @@
 //#region Logic of Cals
-
+//Реализиция обратной польской нотации
 let currentExp = "";
 let stack = [];
+let isNeg = false;
 
 function GetPriority(char)
 {
@@ -12,9 +13,18 @@ function GetPriority(char)
 
 function ExpToRPN(exp)
 {
+    let flag = false;
+    currentExp = "";
     for(let i = 0; i < exp.length; i++)
     {
-        priority = GetPriority(exp[i]); //текущий приоритет знака
+        priority = GetPriority(exp[i]);
+
+        if(exp[0] == "-" && !flag)
+        {
+            isNeg = true;
+            flag = true;
+            continue;
+        }
 
         if(priority == 0)
         {
@@ -62,8 +72,11 @@ function RPNToExp(rpn)
             }
 
             stack_ans.push(Number(sym));
+            // if(stack_ans.length == 1 && isNeg) stack_ans[0] *= -1;
             sym = "";
         }
+
+        if(stack_ans.length == 1 && isNeg) stack_ans[0] = -stack_ans[0];
 
         if(GetPriority(rpn[i]) > 0)
         {
@@ -93,8 +106,8 @@ function RPNToExp(rpn)
 }
 //#endregion Logic of Cals
 
-let isDouble = false;
-let BeenAns = false;
+let isDouble = false; //проверка на наличие точки в числе
+let BeenAns = false; //проверка на то была ли нажата кнопка =
 
 function Begin()
 {
@@ -133,7 +146,7 @@ function ClearOne()
         document.form1.textView.value = "0";
     }
 	
-	if(tmp[tmp.length - 1] == "r" || tmp[tmp.length - 1] == "y" || tmp[tmp.length - 1] == "N")
+	if(tmp == "Error" || tmp == "Infinity" || tmp == "NaN" || tmp == "undefined")
 	{
 		document.form1.textView.value = "0";
 	}
@@ -156,13 +169,19 @@ function InputOperation(op)
     let tmp = document.form1.textView.value;
     isDouble = false;
 
-    if("0" <= tmp[tmp.length-1] && tmp[tmp.length-1] <= "9" && !BeenAns)
+    if(tmp == "0" && op == "-")
+    {
+        document.form1.textView.value = "-";
+        BeenAns = false;
+    }
+
+    else if("0" <= tmp[tmp.length-1] && tmp[tmp.length-1] <= "9" && !BeenAns)
     {
         document.form1.textView.value += op;
     }
 
     else if((tmp[tmp.length - 1] == "+" || tmp[tmp.length - 1] == "-" ||
-            tmp[tmp.length - 1] == "*" || tmp[tmp.length - 1] == "/") && !BeenAns)
+            tmp[tmp.length - 1] == "*" || tmp[tmp.length - 1] == "/") && tmp.length != 1)
     {
         tmp = tmp.substring(0, tmp.length-1) + op;
         document.form1.textView.value = tmp
@@ -172,7 +191,7 @@ function InputOperation(op)
 function Equel()
 {
     let exp = document.form1.textView.value;
-    if(exp.includes("+") || exp.includes("-") || exp.includes("*") || exp.includes("/"))
+    if((exp.includes("+") || exp.includes("-") || exp.includes("*") || exp.includes("/")) && exp.length > 2)
     {
         if(exp[exp.length - 1] == "+" || exp[exp.length - 1] == "-" ||
            exp[exp.length - 1] == "*" || exp[exp.length - 1] == "/" ||
@@ -183,13 +202,16 @@ function Equel()
         else
         {
             ExpToRPN(exp);
+            console.log(currentExp);
             document.form1.textView.value = RPNToExp(currentExp);
         }
         isDouble = false;
         BeenAns = true;
+        isNeg = false;
     }   
 }
 
+//#endregion Анимация при нажатии
 let last_color;
 function Press(e)
 {
@@ -216,3 +238,4 @@ for(let i = 0; i <listOfElem.length;i++)
     listOfElem[i].addEventListener('mousedown', Press);
     listOfElem[i].addEventListener('mouseup', NotPress);
 }
+//#endregion Анимация при нажатии
