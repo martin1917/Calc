@@ -178,7 +178,7 @@ function ToDouble()
     if("0" <= tmp[tmp.length - 1] && tmp[tmp.length - 1] <= "9" && !isDouble && !BeenAns)
     {
         expression += ".";
-        document.form1.textView.value = expression;
+        document.form1.textView.value += ".";
         isDouble = true;
         BeenAns = false;
     }
