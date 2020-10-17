@@ -53,7 +53,3 @@ input{
 .DelAll{
     grid-column:1/span 2 ;
 }
-
-.zero{
-    grid-column:1/span 2 ;
-}

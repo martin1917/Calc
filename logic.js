@@ -1,8 +1,7 @@
 //#region Logic of Cals
-//Реализиция обратной польской нотации
+//Обратная польская нотация
 let currentExp = "";
 let stack = [];
-let isNeg = false;
 
 function GetPriority(char)
 {
@@ -13,19 +12,16 @@ function GetPriority(char)
 
 function ExpToRPN(exp)
 {
-    let flag = false;
-    currentExp = "";
     for(let i = 0; i < exp.length; i++)
     {
-        priority = GetPriority(exp[i]);
+        priority = GetPriority(exp[i]); //текущий приоритет знака
 
-        if(exp[0] == "-" && !flag)
+        if(exp[i] == "_")
         {
-            isNeg = true;
-            flag = true;
+            currentExp += "_1";
+            i += 1;
             continue;
         }
-
         if(priority == 0)
         {
             currentExp += exp[i];
@@ -37,6 +33,7 @@ function ExpToRPN(exp)
             {
                 if(priority <= GetPriority(stack[stack.length - 1]))
                 {
+                    if(currentExp[currentExp.length != " "]) currentExp += " ";
                     currentExp += stack.pop();
                 } 
                 else break;
@@ -47,6 +44,7 @@ function ExpToRPN(exp)
 
     while(stack.length != 0)
     {
+        currentExp += " ";
         currentExp += stack.pop();
     }
 
@@ -66,17 +64,24 @@ function RPNToExp(rpn)
         {
             while(rpn[i] != " " && GetPriority(rpn[i]) == 0)
             {
-                sym += rpn[i];
-                i++;
+                if(rpn[i] == "_")
+                {
+                    sym = "-" + sym;
+                    i += 2;
+                }
+                else
+                {
+                    sym += rpn[i];
+                    i++;
+                }
+
+
                 if(i == rpn.length) break;
             }
 
             stack_ans.push(Number(sym));
-            // if(stack_ans.length == 1 && isNeg) stack_ans[0] *= -1;
             sym = "";
         }
-
-        if(stack_ans.length == 1 && isNeg) stack_ans[0] = -stack_ans[0];
 
         if(GetPriority(rpn[i]) > 0)
         {
@@ -85,7 +90,7 @@ function RPNToExp(rpn)
             switch(rpn[i])
             {
                 case "+":
-                    stack_ans.push(a+b);
+                    stack_ans.push(b+a);
                     break;
 
                 case "-":
@@ -93,7 +98,7 @@ function RPNToExp(rpn)
                     break;
 
                 case "*":
-                    stack_ans.push(a*b);
+                    stack_ans.push(b*a);
                     break;
 
                 case "/":
@@ -102,31 +107,42 @@ function RPNToExp(rpn)
             }
         }
     }
+    currentExp = "";
     return stack_ans.pop();
 }
 //#endregion Logic of Cals
 
-let isDouble = false; //проверка на наличие точки в числе
-let BeenAns = false; //проверка на то была ли нажата кнопка =
+let isDouble = false; //проверка на "."
+let BeenAns = false;  //проерка на то, была ли нажата клавиша "="
+let oneOperation = false; //проверка на наличие хотя бы одной операции в выражение
+let expression = ""; //выражение, которое будет поссылаться в функцию обработки
 
 function Begin()
 {
-    document.form1.textView.value = "0";
+    expression = "0";
+    document.form1.textView.value = expression;
 }
 
 function InputNum(num)
 {
-    if(document.form1.textView.value == "0" || BeenAns)
+    if(expression == "0" || BeenAns)
     {
+        expression = "";
         document.form1.textView.value = "";
         BeenAns = false;
     }
-    document.form1.textView.value += num;
+    if(document.form1.textView.value[document.form1.textView.value.length - 1] != ")")
+    {    
+        expression += num;
+        document.form1.textView.value += num;
+    }    
 }
 
 function ClearAll()
 {
-    document.form1.textView.value = "0";
+    expression = "0";
+    document.form1.textView.value = expression;
+    oneOperation = false;
     isDouble = false;
 }
 
@@ -139,16 +155,19 @@ function ClearOne()
         isDouble = false;
     }
 
-    document.form1.textView.value = tmp.substring(0, tmp.length-1);
+    expression = expression.substring(0, expression.length-1);
+    document.form1.textView.value = tmp.substring(0, tmp.length - 1)
 
-    if(document.form1.textView.value == "")
+    if(expression == "")
     {
-        document.form1.textView.value = "0";
+        expression = "0";
+        document.form1.textView.value = expression;
     }
-	
-	if(tmp == "Error" || tmp == "Infinity" || tmp == "NaN" || tmp == "undefined")
+
+	if(tmp == "Error" || tmp == "Infinity" || tmp == "NaN")
 	{
-		document.form1.textView.value = "0";
+		expression = "0";
+        document.form1.textView.value = expression;
 	}
 }
 
@@ -158,7 +177,8 @@ function ToDouble()
 
     if("0" <= tmp[tmp.length - 1] && tmp[tmp.length - 1] <= "9" && !isDouble && !BeenAns)
     {
-        document.form1.textView.value += ".";
+        expression += ".";
+        document.form1.textView.value = expression;
         isDouble = true;
         BeenAns = false;
     }
@@ -167,23 +187,20 @@ function ToDouble()
 function InputOperation(op)
 {
     let tmp = document.form1.textView.value;
+    oneOperation = true;
     isDouble = false;
 
-    if(tmp == "0" && op == "-")
+    if("0" <= tmp[tmp.length-1] && tmp[tmp.length-1] <= "9" && !BeenAns || tmp[tmp.length-1] == ")")
     {
-        document.form1.textView.value = "-";
-        BeenAns = false;
-    }
-
-    else if("0" <= tmp[tmp.length-1] && tmp[tmp.length-1] <= "9" && !BeenAns)
-    {
+        expression += op;
         document.form1.textView.value += op;
     }
 
     else if((tmp[tmp.length - 1] == "+" || tmp[tmp.length - 1] == "-" ||
-            tmp[tmp.length - 1] == "*" || tmp[tmp.length - 1] == "/") && tmp.length != 1)
+            tmp[tmp.length - 1] == "*" || tmp[tmp.length - 1] == "/") && !BeenAns)
     {
         tmp = tmp.substring(0, tmp.length-1) + op;
+        expression = tmp;
         document.form1.textView.value = tmp
     }
 }
@@ -191,7 +208,7 @@ function InputOperation(op)
 function Equel()
 {
     let exp = document.form1.textView.value;
-    if((exp.includes("+") || exp.includes("-") || exp.includes("*") || exp.includes("/")) && exp.length > 2)
+    if(exp.includes("+") || exp.includes("-") || exp.includes("*") || exp.includes("/"))
     {
         if(exp[exp.length - 1] == "+" || exp[exp.length - 1] == "-" ||
            exp[exp.length - 1] == "*" || exp[exp.length - 1] == "/" ||
@@ -201,17 +218,64 @@ function Equel()
         }
         else
         {
-            ExpToRPN(exp);
-            console.log(currentExp);
+            ExpToRPN(expression);
             document.form1.textView.value = RPNToExp(currentExp);
         }
         isDouble = false;
         BeenAns = true;
-        isNeg = false;
     }   
 }
 
-//#endregion Анимация при нажатии
+function MakeNegetiv()
+{
+    let exp = document.form1.textView.value;
+    let pos = getPossition(exp);
+    
+    if("0" <= exp[exp.length - 1] && exp[exp.length - 1] <= "9")    
+    {  
+        if(exp[pos] == "+" || exp[pos] == "-" ||
+           exp[pos] == "*" || exp[pos] == "/" || !oneOperation)
+        {
+            if(oneOperation) document.form1.textView.value = add_word_in_string(exp, "(-", pos + 1) + ")";
+            else document.form1.textView.value = add_word_in_string(exp, "(-", pos) + ")";
+            
+            expression += "_1";
+        }
+    }    
+}
+
+//#region вспомогательные функции(Велосипеды)
+function add_word_in_string(s1, word, possition)
+{
+    let ans = "";
+    for(let i = 0; i < possition; i++)
+    {
+        ans += s1[i];
+    }
+    
+    ans += word;
+    
+    for(let i = possition; i < s1.length; i++)
+    {
+        ans += s1[i];
+    }
+    
+    return ans;
+}
+
+function getPossition(s1)
+{
+	let ans;
+	for(let i = s1.length - 1; i >= 0; i--)
+	{
+		if(s1[i] == "+" || s1[i] == "-" || s1[i] == "*" || s1[i] == "/") return i;
+    }
+    return 0;
+}
+//#endregion вспомогательные функции(Велосипеды)
+
+
+//#region Анимация при нажатии
 let last_color;
 function Press(e)
 {
@@ -227,7 +291,7 @@ function NotPress(e)
     e = e || window.event;
     var el = e.target || e.srcElement;
     let a = document.getElementById(el.id);
-    
+
     a.style.background = last_color;
 }
 
